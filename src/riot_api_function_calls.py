@@ -17,7 +17,7 @@ moon_puuid = "CbgRckJL3hD1JOBSaIgmfPxw2fMdhHmOLk3SeJlTFT5kYodHIi7EXGULgvyBfyOj5p
 xios_puuid = "CoIyAMP5-u4Qx1yD3IaJ84AUlC0x9ROFplfTSzhV4taoBO_QItb3sPassmE4cVIhL_0nUlNh4MVa1w"
 zate_puuid = "3vNsGPDiUfFu1_jVUx0hv7eUNzyWKsCvgrqmmH6CzJZ07Q8P-fQJuD7o7WnyD1J3I811r9pkcRG8Cg"
 
-
+all_players = [arch_puuid, beef_puuid, mike_puuid, moon_puuid, xios_puuid, zate_puuid]
 
 ########################################## START OF FUNCTIONS ##########################################
 
@@ -76,7 +76,7 @@ def saveToJson(match_id, file_name="recentlySavedJSON"):
     print(f'\nMatch Information successfully saved to "{file_name}".')
     return None
 
-
+#TODO
 def getAllGames(puuid, api_key=api_key):
     # will need to loop through matchv5 api call to retrieve 0-100, then 101-200, then 201-300, etc
     # will need to have a try: catch to catch when there aren't 100 games left to pull
@@ -100,6 +100,9 @@ def getAllGames(puuid, api_key=api_key):
 
 
     return None
+
+
+
 
 
 
