@@ -19,6 +19,7 @@ zate_puuid = "3vNsGPDiUfFu1_jVUx0hv7eUNzyWKsCvgrqmmH6CzJZ07Q8P-fQJuD7o7WnyD1J3I8
 
 all_players = [arch_puuid, beef_puuid, mike_puuid, moon_puuid, xios_puuid, zate_puuid]
 
+
 ########################################## START OF FUNCTIONS ##########################################
 
 def getPlayerInfo(puuid, api_key=api_key):
@@ -76,6 +77,7 @@ def saveToJson(match_id, file_name="recentlySavedJSON"):
     print(f'\nMatch Information successfully saved to "{file_name}".')
     return None
 
+
 #TODO
 def getAllGames(puuid, api_key=api_key):
     # will need to loop through matchv5 api call to retrieve 0-100, then 101-200, then 201-300, etc
@@ -85,37 +87,51 @@ def getAllGames(puuid, api_key=api_key):
     # then we need a better way to store dataframes locally - maybe by saving them as .csv, then we can load from those if we ever need to manually retrieve old data
     # instead of doing it by api calls
 
-
-    # games data need to be normalized (preferrably immediately)
-
-    # this doesn't work (yet)
-    # json_data = json.loads(game)
-    # data = pd.json_normalize(json_data, record_path=[
-    # ['metadata'],
-    # ['info','participants','challenges','missions','perks','styles',],
-    # ['info', 'teams', 'bans','objectives','baron','champion','dragon','horde','inhibitor','riftHerald','tower']
-    # ])
-
-
+    
 
 
     return None
 
 
+def convertToDataframe(match):
+    # converts match json data into a dataframe
+        
+    # flattening metadata to add to each row
+    metadata_data = pd.json_normalize(match['metadata'])
+    data_version = metadata_data.at[0, 'dataVersion']
+    match_id = metadata_data.at[0, 'matchId']
 
+    # flatten game data by participant
+    info_participants_data = pd.json_normalize(
+        match,
+        record_path=['info', 'participants'],
+        meta=['info.gameId', 'info.gameMode'],
+        errors='ignore'
+    )
 
+    # add metadata fields as first two columns for this specific match
+    info_participants_data.insert(0, 'dataVersion', data_version)
+    info_participants_data.insert(1, 'matchId', match_id)
 
+    return info_participants_data
+    
 
 ########################################## END OF FUNCTIONS ##########################################
 
-# to get last 10 game IDs
-last_10_game_IDs = getLastXMatches(mike_puuid, 10)
-print(last_10_game_IDs)
-
+# # to get last 10 game IDs
+# last_10_game_IDs = getLastXMatches(mike_puuid, 10)
+# print(last_10_game_IDs)
 
 # to get specific match details
 match = getMatchDetails("NA1_5155731459")
 
+# # to save to json with name 'one_of_mikeys_games'
+# saveToJson(match, "one_of_mikeys_games")
 
-# to save to json with name 'one_of_mikeys_games'
-saveToJson(match, "one_of_mikeys_games")
+# turn match json data into dataframe
+game_data = convertToDataframe(match)
+
+# print(game_data.head(10))
+
+# Save to CSV or inspect the result
+game_data.to_csv('certain_match.csv')
