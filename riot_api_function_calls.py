@@ -70,7 +70,7 @@ def saveToJson(match_id, file_name="recentlySavedJSON"):
     with open(file_name, "w") as json_file:
         json.dump(match_id, json_file, indent=4)
 
-    print(f'Match ID {match_id} successfully saved to "{file_name}"')
+    print(f'\nMatch Information successfully saved to "{file_name}".')
     return None
 
 
@@ -78,15 +78,12 @@ def getAllGames(puuid, api_key=api_key):
     # will need to loop through matchv5 api call to retrieve 0-100, then 101-200, then 201-300, etc
     # will need to have a try: catch to catch when there aren't 100 games left to pull
     # ^ this means the loop needs to have a try: catch as part of the loop since we won't know when we're getting close to the last call
-
-    # do we want to get all the json here now, then convert to a csv? Or figure that out first?
-    # it may be impossible to convert to csv successfully because of the nesting and complexity of the data. Might need to go directly from json to dataframe
-
-
+    # we want the json data to be converting to a dataframe instantly after retrieval, to do that, it needs to be normalized as it comes in
+    # then we need a better way to store dataframes locally - maybe by saving them as .csv, then we can load from those if we ever need to manually retrieve old data
+    # instead of doing it by api calls
 
 
     # games data need to be normalized (preferrably immediately)
-
 
     # this doesn't work (yet)
     # json_data = json.loads(game)
@@ -95,6 +92,7 @@ def getAllGames(puuid, api_key=api_key):
     # ['info','participants','challenges','missions','perks','styles',],
     # ['info', 'teams', 'bans','objectives','baron','champion','dragon','horde','inhibitor','riftHerald','tower']
     # ])
+
 
 
 
