@@ -29,6 +29,17 @@ def getPlayerInfo(puuid, api_key=api_key):
     return player_info
 
 
+def getLastXMatches(puuid, x=20, api_key=api_key):
+    # function to retrieve last X match ids by puuid defaulted to 20, with api_key with our api key as default value
+
+    # constructing url
+    constructed_url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuid + "/ids?start=0&count=" + str(x) + "&api_key=" + api_key
+
+    # calling api key and storing as json
+    match_ids = (requests.get(constructed_url)).json()
+    return match_ids
+
+
 def getMatchDetails(match_id, api_key=api_key):
     # function to retrieve match info by match_id, with api_key with our api key as default value
 
@@ -38,6 +49,7 @@ def getMatchDetails(match_id, api_key=api_key):
     # calling api key and storing as json
     match_details = (requests.get(constructed_url)).json()
     return match_details
+
 
 def getMatchTimelineDetails(match_id, api_key=api_key):
     # function to retrieve match timeline info by match_id, with api_key with our api key as default value
@@ -50,19 +62,10 @@ def getMatchTimelineDetails(match_id, api_key=api_key):
     return match_timeline_details
 
 
-def getLastXMatches(puuid, x=20, api_key=api_key):
-    # function to retrieve last X match ids by puuid defaulted to 20, with api_key with our api key as default value
-
-    # constructing url
-    constructed_url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuid + "/ids?start=0&count=" + str(x) + "&api_key=" + api_key
-
-    # calling api key and storing as json
-    match_ids = (requests.get(constructed_url)).json()
-    return match_ids
-
-
 def saveToJson(match_id, file_name="recentlySavedJSON"):
     # saves json data from api call to .json file
+
+    file_name = file_name + ".json"
 
     with open(file_name, "w") as json_file:
         json.dump(match_id, json_file, indent=4)
@@ -70,14 +73,49 @@ def saveToJson(match_id, file_name="recentlySavedJSON"):
     print(f'Match ID {match_id} successfully saved to "{file_name}"')
     return None
 
+
+def getAllGames(puuid, api_key=api_key):
+    # will need to loop through matchv5 api call to retrieve 0-100, then 101-200, then 201-300, etc
+    # will need to have a try: catch to catch when there aren't 100 games left to pull
+    # ^ this means the loop needs to have a try: catch as part of the loop since we won't know when we're getting close to the last call
+
+    # do we want to get all the json here now, then convert to a csv? Or figure that out first?
+    # it may be impossible to convert to csv successfully because of the nesting and complexity of the data. Might need to go directly from json to dataframe
+
+
+
+
+    # games data need to be normalized (preferrably immediately)
+
+
+    # this doesn't work (yet)
+    # json_data = json.loads(game)
+    # data = pd.json_normalize(json_data, record_path=[
+    # ['metadata'],
+    # ['info','participants','challenges','missions','perks','styles',],
+    # ['info', 'teams', 'bans','objectives','baron','champion','dragon','horde','inhibitor','riftHerald','tower']
+    # ])
+
+
+
+    return None
+
+
+
+
+
+
+
 ########################################## END OF FUNCTIONS ##########################################
 
+# to get last 10 game IDs
+last_10_game_IDs = getLastXMatches(mike_puuid, 10)
+print(last_10_game_IDs)
 
 
-saved = getLastXMatches(zate_puuid, 102)
+# to get specific match details
+match = getMatchDetails("NA1_5155731459")
 
-print(saved)
 
-# game = getMatchDetails("NA1_5079182845")
-
-# saveToJson(game, "nathans_last_game")
+# to save to json with name 'one_of_mikeys_games'
+saveToJson(match, "one_of_mikeys_games")
