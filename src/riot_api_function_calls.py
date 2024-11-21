@@ -2,9 +2,12 @@ import csv
 import json
 import requests
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
-# our API key, will need to encrypt this later
-api_key = "RGAPI-ffdcafba-fb2c-46fe-9840-92710f9ea538"
+load_dotenv()
+
+api_key = os.getenv("api_key")
 
 # puuid's by player, variable name only first four letters
 arch_puuid = "JIkyz_0k_yLCeRtdeX6TVG58zaY3-iMo_ZD8mt33v39pSBKq6utCRZgIASdJY1xaWsoc14hH62v8uQ"
@@ -97,10 +100,6 @@ def getAllGames(puuid, api_key=api_key):
 
 
     return None
-
-
-
-
 
 
 
