@@ -87,13 +87,13 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
 
     first_time = True   # will be turned off after csv creation
     match_count = 0     # counts how many matches are loaded
+    while_loop_count = 1
     skipped_matches = 0 # counts how many matches are skipped
    
 
 
-    # stop once there are no more matches to retrieve
     while True:
-        print("\nStart of while loop!")
+        print(f'\nStart of while loop {while_loop_count}!')
 
         # constructing url for retrieving 100 games at a time    
         constructed_url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuid + "/ids?start=" + str(start) + "&count=" + str(increment) + "&api_key=" + api_key
@@ -101,6 +101,7 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
         # calling api key and storing as json
         matches = (requests.get(constructed_url)).json()
 
+        # stops once there are no more matches to retrieve
         if not matches:
             print(f'Process completed. {match_count-skipped_matches} matches loaded, {skipped_matches} matches skipped.')
             break
@@ -134,10 +135,11 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
 
             print(f'Appending step done.')
 
-        print("I'm about to increase the counter by 100.")
+        print(f"\nI'm about to increase the counter by {increment}.")
         
         # gets next 100 games
-        start += 100
+        start += increment
+        while_loop_count += 1
 
     return None
 
@@ -482,4 +484,4 @@ def convertToDataframe(match):
 # # Save to CSV or inspect the result
 # game_data.to_csv('certain_match.csv')
 
-getAllGames(zate_puuid, 0, 2, 'zatevon_all_games.csv')
+getAllGames(zate_puuid, 0, 50, 'zatevon_all_games.csv')
