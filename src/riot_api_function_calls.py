@@ -77,7 +77,7 @@ def saveToJson(match_id, file_name='recentlySavedJSON.json'):
     print(f'\nMatch Information successfully saved to "{file_name}".')
     return None
 
-#TODO
+
 def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv', api_key=api_key):
     # will need to loop through matchv5 api call to retrieve 0-100, then 101-200, then 201-300, etc
     # will need to have a try: catch to catch when there aren't 100 games left to pull
@@ -163,6 +163,7 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
     return None
 
 
+
 def convertToDataframe(match):
     # converts match json data to a DataFrame
     
@@ -185,21 +186,49 @@ def convertToDataframe(match):
     game_type = general_info_data.at[0, 'gameType']
     game_version = general_info_data.at[0, 'gameVersion']
     map_id = general_info_data.at[0, 'mapId']
+    platform_id = general_info_data.at[0, 'platformId']
+    queue_id = general_info_data.at[0, 'queueId']
+    tournament_code = general_info_data.at[0, 'tournamentCode']
+
+    # flattening team info
+    teams = match['info']['teams']
+    team_data = {team['teamId']: team for team in teams}    # match teamId for lookup later
 
     # list to store rows
     rows = []
 
-    # loop through each participant
+    # loop through each participant and create rows
     for participant in match['info']['participants']:
 
+        # bans ###
+        # assign team based on player's teamId
+        team = team_data[participant['teamId']]
+        
+        # prepare bans
+        team_bans = team.get("bans", [])
+
+        # calculate player's local index within their team
+        team_participants = [p for p in match['info']['participants'] if p['teamId'] == team['teamId']]
+        team_idx = team_participants.index(participant)             # local index
+
+        # Retrieve ban based on team-local index
+        ban = team_bans[team_idx] if team_idx < len(team_bans) else {}
+
+
+        # other sections ###
         # prepare challenges subtree
         challenges = participant.get("challenges", {})
+
+        # prepare objectives subtree
+        objectives = team.get("objectives", {})
+
 
         # put all participant data in rows
         participant_row = {
             # metadata info ###
             'dataVersion': data_version,
             'matchId': match_id,
+
 
             # info ###
             'game_creation': game_creation,
@@ -212,6 +241,30 @@ def convertToDataframe(match):
             'game_type': game_type,
             'game_version': game_version,
             'map_id': map_id,
+            'platform1': platform_id,
+            'queue_id': queue_id,   # this is what determines flex, norm, solo q, bots, aram, etc
+            'tournament_code': tournament_code,
+
+            # bans ###
+            'ban_championId': ban.get("championId", np.nan),
+            'ban_pickTurn': ban.get("pickTurn", np.nan),
+
+            # objectives ###
+            'team_objectives.baronFirst': objectives.get("baron", {}).get("first", np.nan),
+            'team_objectives.baronKills': objectives.get("baron", {}).get("kills", np.nan),
+            'team_objectives.championFirst': objectives.get("champion", {}).get("first", np.nan),
+            'team_objectives.championKills': objectives.get("champion", {}).get("kills", np.nan),
+            'team_objectives.dragonFirst': objectives.get("dragon", {}).get("first", np.nan),
+            'team_objectives.dragonKills': objectives.get("dragon", {}).get("kills", np.nan),
+            'team_objectives.hordeFirst': objectives.get("horde", {}).get("first", np.nan),
+            'team_objectives.hordeKills': objectives.get("horde", {}).get("kills", np.nan),
+            'team_objectives.inhibitorFirst': objectives.get("inhibitor", {}).get("first", np.nan),
+            'team_objectives.inhibitorKills': objectives.get("inhibitor", {}).get("kills", np.nan),
+            'team_objectives.riftHeraldFirst': objectives.get("riftHerald", {}).get("first", np.nan),
+            'team_objectives.riftHeraldKills': objectives.get("riftHerald", {}).get("kills", np.nan),
+            'team_objectives.towerFirst': objectives.get("tower", {}).get("first", np.nan),
+            'team_objectives.towerKills': objectives.get("tower", {}).get("kills", np.nan),
+
 
             # info-participant ###
             'allInPings': participant.get("allInPings", np.nan),
@@ -503,4 +556,4 @@ def convertToDataframe(match):
 # # Save to CSV or inspect the result
 # game_data.to_csv('certain_match.csv')
 
-getAllGames(zate_puuid, 0, 100, 'zatevon_all_games.csv')
+getAllGames(zate_puuid, 0, 50, 'test.csv')
