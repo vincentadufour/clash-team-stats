@@ -4,3 +4,4 @@
 3. Once that's done, create a loop for the matchv5 api call to by 100 game increments and store it in dataframes but in a way that's saved locally and transferably (very important!), I only want to have to make that call once for old data
 4. Create a function that gets all matches not already retrieved (to update our list of games)
 5. Create a README
+6. Compare 'Match Details' to 'Match Timeline Details' API calls to see which we want to keep
