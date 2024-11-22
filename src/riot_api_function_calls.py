@@ -5,6 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import numpy as np
+import time
 
 load_dotenv()
 
@@ -85,11 +86,11 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
     # then we need a better way to store dataframes locally - maybe by saving them as .csv, then we can load from those if we ever need to manually retrieve old data
     # instead of doing it by api calls
 
-    first_time = True   # will be turned off after csv creation
-    match_count = 0     # counts how many matches are loaded
-    while_loop_count = 1
-    skipped_matches = 0 # counts how many matches are skipped
-   
+    first_time = True       # will be turned off after csv creation
+    match_count = 0         # counts how many matches are loaded
+    while_loop_count = 1    # counts how many while loops have run
+    status_429_count = 0    # counts how many rate limit exceeds
+    skipped_matches = 0     # counts how many matches are skipped
 
 
     while True:
@@ -98,12 +99,22 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
         # constructing url for retrieving 100 games at a time    
         constructed_url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuid + "/ids?start=" + str(start) + "&count=" + str(increment) + "&api_key=" + api_key
 
+        print(f'\nUsing this url:\n{constructed_url}..')
+
         # calling api key and storing as json
         matches = (requests.get(constructed_url)).json()
 
+        # catches if we exceeded rate limit with status code 429
+        if 'status' in matches and matches['status'].get('status_code') == 429:
+            status_429_count += 1
+            print(f'\nStatus code 429: rate limit exceeded! Retrying in 2 minutes. (Error #{status_429_count})')
+            time.sleep(120)     # 100 requests every 2 minutes
+            print(f'\nResuming loop {while_loop_count}..')
+            continue
+
         # stops once there are no more matches to retrieve
         if not matches:
-            print(f'Process completed. {match_count-skipped_matches} matches loaded, {skipped_matches} matches skipped.')
+            print(f'\nProcess completed. {match_count-skipped_matches} matches loaded, {skipped_matches} matches skipped, {status_429_count} rate limit exceeds.')
             break
 
         # iterate through each 100 match and append into csv
@@ -111,8 +122,16 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
             match_count += 1
             print(f'\n{match_count}: Retrieving {match}.')
 
-            # constructing url for getting match data
+            # constructing url for getting match data, this is the function that times out the most frequently
             match_details = getMatchDetails(match)
+
+            # catches if we exceeded rate limit with status code 429
+            if 'status' in match_details and match_details['status'].get('status_code') == 429:
+                status_429_count += 1
+                print(f'\nStatus code 429: rate limit exceeded inside of match detail retrieval! Retrying in 2 minutes. (Error #{status_429_count})')
+                time.sleep(120)     # 100 requests every 2 minutes
+                print(f'\nResuming match details retrievel for {match}..')
+                match_details = getMatchDetails(match)
 
             # check if match details exists
             if match_details:
@@ -146,8 +165,8 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
 
 def convertToDataframe(match):
     # converts match json data to a DataFrame
-
-    print("Began process to convert to DataFrame..")
+    
+    print("Beginning process to convert to DataFrame..")
         
     # flattening metadata to add to each row
     metadata_data = pd.json_normalize(match['metadata'])
@@ -484,4 +503,4 @@ def convertToDataframe(match):
 # # Save to CSV or inspect the result
 # game_data.to_csv('certain_match.csv')
 
-getAllGames(zate_puuid, 0, 50, 'zatevon_all_games.csv')
+getAllGames(zate_puuid, 0, 100, 'zatevon_all_games.csv')
