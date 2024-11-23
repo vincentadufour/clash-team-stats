@@ -194,33 +194,40 @@ def convertToDataframe(match):
     teams = match['info']['teams']
     team_data = {team['teamId']: team for team in teams}    # match teamId for lookup later
 
+    # retrieving queueId early to potentially skip bans
+    queue_id = match.get('info', {}).get('queueId', None)
+    print(f'This is the queue id for this game: {queue_id}')
+
     # list to store rows
     rows = []
 
     # loop through each participant and create rows
     for participant in match['info']['participants']:
+
+        # reset flag
+        retrieve_bans = True
         
-        team_id = participant['teamId']
-        if team_id not in team_data:
-            # select team manually
-            team = 200
-        else:
-            # select team normally
+        # if queue_id is
+        if queue_id == 1700:
+            print(f'Skipping bans for {match_id} due to queueId 1700.')
+            retrieve_bans = False
 
-            # assign team based on player's teamId
-            team = team_data[participant['teamId']]
+        # assign team based on player's teamId
+        team = team_data[participant['teamId']]
 
-
-        # bans ###    
+        # bans ###
+        if  retrieve_bans:
         # prepare bans
-        team_bans = team.get("bans", [])
+            team_bans = team.get("bans", [])
 
-        # calculate player's local index within their team
-        team_participants = [p for p in match['info']['participants'] if p['teamId'] == team['teamId']]
-        team_idx = team_participants.index(participant)             # local index
+            # calculate player's local index within their team
+            team_participants = [p for p in match['info']['participants'] if p['teamId'] == team['teamId']]
+            team_idx = team_participants.index(participant)             # local index
 
-        # Retrieve ban based on team-local index
-        ban = team_bans[team_idx] if team_idx < len(team_bans) else {}
+            # Retrieve ban based on team-local index
+            ban = team_bans[team_idx] if team_idx < len(team_bans) else {}
+        else:
+            ban = {'championId': np.nan, 'pickTurn': np.nan}
 
 
         # other sections ###
