@@ -199,11 +199,19 @@ def convertToDataframe(match):
 
     # loop through each participant and create rows
     for participant in match['info']['participants']:
-
-        # bans ###
-        # assign team based on player's teamId
-        team = team_data[participant['teamId']]
         
+        team_id = participant['teamId']
+        if team_id not in team_data:
+            # select team manually
+            team = 200
+        else:
+            # select team normally
+
+            # assign team based on player's teamId
+            team = team_data[participant['teamId']]
+
+
+        # bans ###    
         # prepare bans
         team_bans = team.get("bans", [])
 
@@ -542,11 +550,11 @@ def convertToDataframe(match):
 # last_10_game_IDs = getLastXMatches(mike_puuid, 10)
 # print(last_10_game_IDs)
 
-# # to get specific match details
-# match = getMatchDetails("NA1_5155731459")
+# to get specific match details
+# match = getMatchDetails("NA1_4878560807")
 
-# # to save to json with name 'one_of_mikeys_games'
-# saveToJson(match, "one_of_mikeys_games")
+# to save to json with name 'one_of_mikeys_games'
+# saveToJson(match, "problem_game.json")
 
 # # turn match json data into dataframe
 # game_data = convertToDataframe(match)
@@ -556,4 +564,4 @@ def convertToDataframe(match):
 # # Save to CSV or inspect the result
 # game_data.to_csv('certain_match.csv')
 
-getAllGames(zate_puuid, 0, 50, 'test.csv')
+getAllGames(zate_puuid, 0, 100, 'zatevon_all_games1.csv')
