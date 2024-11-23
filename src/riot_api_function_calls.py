@@ -114,6 +114,7 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
 
         # stops once there are no more matches to retrieve
         if not matches:
+            print(f'\n\n{matches}\n\n')
             print(f'\nProcess completed. {match_count-skipped_matches} matches loaded, {skipped_matches} matches skipped, {status_429_count} rate limit exceeds.')
             break
 
@@ -586,4 +587,4 @@ def convertToDataframe(match):
 # # Save to CSV or inspect the result
 # game_data.to_csv('certain_match.csv')
 
-getAllGames(zate_puuid, 0, 100, 'zatevon_all_games1.csv')
+getAllGames(arch_puuid, 0, 100, '`1000limit`.csv')
