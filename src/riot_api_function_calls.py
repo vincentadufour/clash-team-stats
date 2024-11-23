@@ -143,7 +143,16 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
 
             # convert to DataFrame
             match_dataframe = convertToDataframe(match_details)
-            print(f'Match DataFrame created successfully. Appending to csv..')
+
+
+            # skips queueId = 1700
+            if isinstance(match_dataframe, pd.DataFrame):
+                print(f'Match DataFrame created successfully. Appending to csv..')
+            else:
+                print(f'Match details not found. Skipping {match}.')
+                skipped_matches += 1
+                continue
+                
 
             # create new csv with first submission to keep headers
             if first_time:
@@ -166,7 +175,16 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
 
 def convertToDataframe(match):
     # converts match json data to a DataFrame
-    
+
+    # retrieving queueId early to potentially skip bans
+    queue_id = match.get('info', {}).get('queueId', None)
+    print(f'This is the queue id for this game: {queue_id}')
+
+    # skips queueId = 1700
+    if queue_id == 1700:
+        print(f'Queue ID 1700 detected. Skipping match.')
+        return None
+
     print("Beginning process to convert to DataFrame..")
         
     # flattening metadata to add to each row
@@ -194,40 +212,36 @@ def convertToDataframe(match):
     teams = match['info']['teams']
     team_data = {team['teamId']: team for team in teams}    # match teamId for lookup later
 
-    # retrieving queueId early to potentially skip bans
-    queue_id = match.get('info', {}).get('queueId', None)
-    print(f'This is the queue id for this game: {queue_id}')
-
     # list to store rows
     rows = []
 
     # loop through each participant and create rows
     for participant in match['info']['participants']:
 
-        # reset flag
-        retrieve_bans = True
+        # # reset flag
+        # retrieve_bans = True
         
-        # if queue_id is
-        if queue_id == 1700:
-            print(f'Skipping bans for {match_id} due to queueId 1700.')
-            retrieve_bans = False
+        # # if queue_id is
+        # if queue_id == 1700:
+        #     print(f'Skipping bans for {match_id} due to queueId 1700.')
+        #     retrieve_bans = False
 
         # assign team based on player's teamId
         team = team_data[participant['teamId']]
 
-        # bans ###
-        if  retrieve_bans:
-        # prepare bans
-            team_bans = team.get("bans", [])
+        # # bans ###
+        # if retrieve_bans:
+            # prepare bans
+        team_bans = team.get("bans", [])
 
-            # calculate player's local index within their team
-            team_participants = [p for p in match['info']['participants'] if p['teamId'] == team['teamId']]
-            team_idx = team_participants.index(participant)             # local index
+        # calculate player's local index within their team
+        team_participants = [p for p in match['info']['participants'] if p['teamId'] == team['teamId']]
+        team_idx = team_participants.index(participant)             # local index
 
-            # Retrieve ban based on team-local index
-            ban = team_bans[team_idx] if team_idx < len(team_bans) else {}
-        else:
-            ban = {'championId': np.nan, 'pickTurn': np.nan}
+        # Retrieve ban based on team-local index
+        ban = team_bans[team_idx] if team_idx < len(team_bans) else {}
+    # else:
+    #         ban = {'championId': np.nan, 'pickTurn': np.nan}
 
 
         # other sections ###
@@ -560,8 +574,9 @@ def convertToDataframe(match):
 # to get specific match details
 # match = getMatchDetails("NA1_4878560807")
 
-# to save to json with name 'one_of_mikeys_games'
-# saveToJson(match, "problem_game.json")
+
+# # to save to json with name 'one_of_mikeys_games'
+# # saveToJson(match, "problem_game.json")
 
 # # turn match json data into dataframe
 # game_data = convertToDataframe(match)
