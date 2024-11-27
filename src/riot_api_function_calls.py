@@ -86,11 +86,12 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
     # then we need a better way to store dataframes locally - maybe by saving them as .csv, then we can load from those if we ever need to manually retrieve old data
     # instead of doing it by api calls
 
-    first_time = True       # will be turned off after csv creation
-    match_count = 0         # counts how many matches are loaded
-    while_loop_count = 1    # counts how many while loops have run
-    status_429_count = 0    # counts how many rate limit exceeds
-    skipped_matches = 0     # counts how many matches are skipped
+    first_time = True           # will be turned off after csv creation
+    match_count = 0             # counts how many matches are loaded
+    while_loop_count = 1        # counts how many while loops have run
+    status_429_count = 0        # counts how many rate limit exceeds
+    invalid_skipped_matches = 0 # counts how many matches are skipped due to invalid data
+    arena_skipped_matches = 0   # counts how many arena matches are skipped
 
 
     while True:
@@ -115,7 +116,8 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
         # stops once there are no more matches to retrieve
         if not matches:
             print(f'\n\n{matches}\n\n')
-            print(f'\nProcess completed. {match_count-skipped_matches} matches loaded, {skipped_matches} matches skipped, {status_429_count} rate limit exceeds.')
+            skipped = invalid_skipped_matches + arena_skipped_matches
+            print(f'\nProcess completed. {match_count-skipped} matches loaded, {invalid_skipped_matches} invalid matches skipped, {arena_skipped_matches} arena matches skipped, {status_429_count} rate limit exceeds.')
             break
 
         # iterate through each 100 match and append into csv
@@ -139,7 +141,7 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
                 print(f'Match details retrieved successfully. Converting to DataFrame..')
             elif not match_details or not isinstance(match_details, dict):      # if match data is corrupted, skip match
                 print(f'Skipping match {match} due to invalid data.')
-                skipped_matches += 1
+                invalid_skipped_matches += 1
                 continue
 
             # convert to DataFrame
@@ -151,7 +153,7 @@ def getAllGames(puuid, start=0, increment=100, file_name='recentlySavedCSV.csv',
                 print(f'Match DataFrame created successfully. Appending to csv..')
             else:
                 print(f'Match details not found. Skipping {match}.')
-                skipped_matches += 1
+                arena_skipped_matches += 1
                 continue
                 
 
@@ -587,4 +589,4 @@ def convertToDataframe(match):
 # # Save to CSV or inspect the result
 # game_data.to_csv('certain_match.csv')
 
-getAllGames(arch_puuid, 0, 100, '`1000limit`.csv')
+getAllGames(beef_puuid, 0, 100, 'beef_26112024.csv')
